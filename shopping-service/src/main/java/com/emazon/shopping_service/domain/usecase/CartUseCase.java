@@ -59,7 +59,7 @@ public class CartUseCase implements ICartServicePort {
         cart.setUpdatedDate(LocalDateTime.now());
         cartPersistencePort.updateCart(cart);
         cartPersistencePort.addProductToCart(addProduct.getProductId(), userId);
-        
+
     }
 
     @Override
