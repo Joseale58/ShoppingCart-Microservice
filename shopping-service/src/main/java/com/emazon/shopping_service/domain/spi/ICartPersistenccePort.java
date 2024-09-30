@@ -10,5 +10,5 @@ public interface ICartPersistenccePort {
     Optional<Cart> getCartByUserId(Long userId);
     Optional<CartItem> getCartItemById(Long cartId, Long productId);
     void updateCart(Cart cart);
-    void addProductToCart(Long productId, Long userId);
+    void addProductToCart(CartItem cartItem);
 }

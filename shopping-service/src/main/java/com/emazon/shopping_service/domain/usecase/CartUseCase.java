@@ -38,13 +38,14 @@ public class CartUseCase implements ICartServicePort {
         }
 
         Optional<CartItem> optionalCartItem = cartPersistencePort.getCartItemById(cart.getId(), addProduct.getProductId());
+        CartItem cartItem = new CartItem();
 
         if(optionalCartItem.isPresent()) {
-            CartItem cartItem = optionalCartItem.get();
+            cartItem = optionalCartItem.get();
             cartItem.setQuantity(cartItem.getQuantity() + addProduct.getQuantity());
             addProduct.setQuantity(cartItem.getQuantity());
         } else {
-            CartItem cartItem = new CartItem();
+            cartItem = new CartItem();
             cartItem.setCart(cart);
             cartItem.setProductid(addProduct.getProductId());
             cartItem.setQuantity(addProduct.getQuantity());
@@ -58,7 +59,7 @@ public class CartUseCase implements ICartServicePort {
 
         cart.setUpdatedDate(LocalDateTime.now());
         cartPersistencePort.updateCart(cart);
-        cartPersistencePort.addProductToCart(addProduct.getProductId(), userId);
+        cartPersistencePort.addProductToCart(cartItem);
 
     }
 
