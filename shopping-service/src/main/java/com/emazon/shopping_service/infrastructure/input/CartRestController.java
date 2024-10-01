@@ -22,7 +22,7 @@ public class CartRestController {
     private final ICartHandler cartHandler;
 
     @PostMapping
-    public ResponseEntity<String> addArticleToCart(@RequestBody AddProductRequest addProductRequest) {
+    public ResponseEntity<String> addProductToCart(@RequestBody AddProductRequest addProductRequest) {
         cartHandler.addProductToCart(addProductRequest, 1L);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }

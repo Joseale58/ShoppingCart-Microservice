@@ -11,6 +11,7 @@ import com.emazon.shopping_service.infrastructure.output.jpa.repository.ICartIte
 import com.emazon.shopping_service.infrastructure.output.jpa.repository.ICartRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -24,6 +25,8 @@ public class CartJpaAdapter implements ICartPersistenccePort {
     @Override
     public Cart createCart(Long userId) {
         CartEntity cartEntity = new CartEntity();
+        cartEntity.setCreatedDate(LocalDateTime.now());
+        cartEntity.setUpdatedDate(LocalDateTime.now());
         cartEntity.setUserId(userId);
         cartRepository.save(cartEntity);
         return cartEntityMapper.toCart(cartEntity);
@@ -37,7 +40,7 @@ public class CartJpaAdapter implements ICartPersistenccePort {
 
     @Override
     public Optional<CartItem> getCartItemById(Long cartId, Long productId) {
-        Optional<CartItemEntity> cartItem = cartItemRepository.findByCartIdAndArticleId(cartId, productId);
+        Optional<CartItemEntity> cartItem = cartItemRepository.findByCartIdAndProductId(cartId, productId);
         return cartItem.map(cartItemEntityMapper::toCartItem);
     }
 

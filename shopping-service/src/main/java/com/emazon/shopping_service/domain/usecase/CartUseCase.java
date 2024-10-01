@@ -32,7 +32,6 @@ public class CartUseCase implements ICartServicePort {
 
         if (optionalCart.isEmpty()) {
             cart = cartPersistencePort.createCart(userId);
-            cart.setCreatedDate(LocalDateTime.now());
         } else {
             cart = optionalCart.get();
         }
@@ -74,6 +73,10 @@ public class CartUseCase implements ICartServicePort {
     public void checkMaxCategories(List<Category> categories, Cart cart) {
 
         Map<Category, Integer> quantityPerCategory = new HashMap<>();
+
+        if(cart.getCartItems() == null) {
+            return;
+        }
 
         for(CartItem cartItem : cart.getCartItems()) {
             Product existingProduct = stockPersistencePort.getProductById(cartItem.getProductid());

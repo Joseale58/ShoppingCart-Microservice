@@ -1,7 +1,7 @@
 package com.emazon.shopping_service.infrastructure.output.security.utils;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.emazon.transaction_service.utils.SecurityConstants;
+import com.emazon.shopping_service.utils.SecurityConstants;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

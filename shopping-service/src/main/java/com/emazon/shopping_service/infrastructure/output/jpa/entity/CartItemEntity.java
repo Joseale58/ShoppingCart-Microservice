@@ -23,7 +23,7 @@ public class CartItemEntity {
     private CartEntity cart;
 
     @Column(nullable = false)
-    private Long articleId;
+    private Long productId;
 
     @Column(nullable = false)
     private Integer quantity;

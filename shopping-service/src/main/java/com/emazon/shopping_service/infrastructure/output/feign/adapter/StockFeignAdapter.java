@@ -3,9 +3,10 @@ package com.emazon.shopping_service.infrastructure.output.feign.adapter;
 import com.emazon.shopping_service.domain.model.Product;
 import com.emazon.shopping_service.domain.spi.IStockPersistencePort;
 import com.emazon.shopping_service.infrastructure.output.feign.client.IStockFeignClient;
-import feign.FeignException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 
+@RequiredArgsConstructor
 public class StockFeignAdapter implements IStockPersistencePort {
 
     private final IStockFeignClient stockFeignClient;
