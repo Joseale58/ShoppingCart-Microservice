@@ -6,23 +6,19 @@ import java.util.List;
 public class Cart {
 
     private Long id;
-    private Long userId;
+    private String email;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private List<CartItem> cartItems;
 
-
-
-    public Cart(Long id, Long userId, LocalDateTime createdDate, LocalDateTime updatedDate) {
+    public Cart(Long id, String email, LocalDateTime createdDate, LocalDateTime updatedDate, List<CartItem> cartItems) {
         this.id = id;
-        this.userId = userId;
+        this.email = email;
         this.createdDate = createdDate;
         this.updatedDate = updatedDate;
+        this.cartItems = cartItems;
     }
 
-    public Cart() {
-
-    }
 
     public Long getId() {
         return id;
@@ -32,12 +28,12 @@ public class Cart {
         this.id = id;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getEmail() {
+        return email;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public LocalDateTime getCreatedDate() {

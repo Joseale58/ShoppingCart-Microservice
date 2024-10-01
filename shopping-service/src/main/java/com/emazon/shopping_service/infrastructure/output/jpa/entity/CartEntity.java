@@ -23,7 +23,7 @@ public class CartEntity {
     private Long id;
 
     @Column(nullable = false)
-    private Long userId;
+    private String email;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)

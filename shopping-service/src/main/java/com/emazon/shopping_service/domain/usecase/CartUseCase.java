@@ -4,8 +4,9 @@ import com.emazon.shopping_service.domain.api.ICartServicePort;
 import com.emazon.shopping_service.domain.exceptions.CategoryItemLimitExceededException;
 import com.emazon.shopping_service.domain.exceptions.InsufficientStockException;
 import com.emazon.shopping_service.domain.model.*;
-import com.emazon.shopping_service.domain.spi.ICartPersistenccePort;
+import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.domain.spi.IStockPersistencePort;
+import com.emazon.shopping_service.domain.spi.ITransactionPersistencePort;
 import com.emazon.shopping_service.utils.Constants;
 
 import java.time.LocalDateTime;
@@ -16,22 +17,24 @@ import java.util.Optional;
 
 public class CartUseCase implements ICartServicePort {
 
-    private final ICartPersistenccePort cartPersistencePort;
+    private final ICartPersistencePort cartPersistencePort;
     private final IStockPersistencePort stockPersistencePort;
+    private final ITransactionPersistencePort transactionPersistencePort;
 
-    public CartUseCase(ICartPersistenccePort cartPersistencePort, IStockPersistencePort stockPersistencePort) {
+    public CartUseCase(ICartPersistencePort cartPersistencePort, IStockPersistencePort stockPersistencePort, ITransactionPersistencePort transactionPersistencePort) {
         this.cartPersistencePort = cartPersistencePort;
         this.stockPersistencePort = stockPersistencePort;
+        this.transactionPersistencePort = transactionPersistencePort;
     }
 
     @Override
-    public void addProductToCart(AddProduct addProduct, Long userId) {
+    public void addProductToCart(AddProduct addProduct, String email) {
 
-        Optional<Cart> optionalCart = cartPersistencePort.getCartByUserId(userId);
+        Optional<Cart> optionalCart = cartPersistencePort.getCartByUserEmail(email);
         Cart cart;
 
         if (optionalCart.isEmpty()) {
-            cart = cartPersistencePort.createCart(userId);
+            cart = cartPersistencePort.createCart(email);
         } else {
             cart = optionalCart.get();
         }
@@ -65,7 +68,8 @@ public class CartUseCase implements ICartServicePort {
     @Override
     public void checkStockAvailability(AddProduct addProduct, Integer stock) {
         if(stock < addProduct.getQuantity()) {
-            throw new InsufficientStockException(Constants.INSUFFICIENT_STOCK_EXCEPTION);
+            LocalDateTime nextSupplyDate = transactionPersistencePort.nextSupplyDate(addProduct.getProductId());
+            throw new InsufficientStockException(Constants.INSUFFICIENT_STOCK_EXCEPTION + nextSupplyDate);
         }
     }
 

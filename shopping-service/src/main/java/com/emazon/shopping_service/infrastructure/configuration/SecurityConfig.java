@@ -3,6 +3,7 @@ package com.emazon.shopping_service.infrastructure.configuration;
 
 import com.emazon.shopping_service.infrastructure.output.security.utils.JwtTokenValidatorFilter;
 import com.emazon.shopping_service.infrastructure.output.security.utils.JwtUtils;
+import com.emazon.shopping_service.utils.SecurityConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(http  ->{
                     http.requestMatchers("/swagger-ui/**","/v3/api-docs/**").permitAll();
-                    http.requestMatchers(HttpMethod.POST, "/cart/**").permitAll();
+                    http.requestMatchers(HttpMethod.POST, "/cart/**").hasAuthority(SecurityConstants.CLAIM_ROLE_CLIENT);
                     http.anyRequest().permitAll();
                 })
                 .addFilterBefore(new JwtTokenValidatorFilter(jwtUtils), BasicAuthenticationFilter.class)

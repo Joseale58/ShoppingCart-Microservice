@@ -2,7 +2,7 @@ package com.emazon.shopping_service.infrastructure.output.jpa.adapter;
 
 import com.emazon.shopping_service.domain.model.Cart;
 import com.emazon.shopping_service.domain.model.CartItem;
-import com.emazon.shopping_service.domain.spi.ICartPersistenccePort;
+import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartEntity;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartItemEntity;
 import com.emazon.shopping_service.infrastructure.output.jpa.mapper.ICartEntityMapper;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
-public class CartJpaAdapter implements ICartPersistenccePort {
+public class CartJpaAdapter implements ICartPersistencePort {
 
     private final ICartRepository cartRepository;
     private final ICartItemRepository cartItemRepository;
@@ -23,18 +23,18 @@ public class CartJpaAdapter implements ICartPersistenccePort {
     private final ICartItemEntityMapper cartItemEntityMapper;
 
     @Override
-    public Cart createCart(Long userId) {
+    public Cart createCart(String email) {
         CartEntity cartEntity = new CartEntity();
         cartEntity.setCreatedDate(LocalDateTime.now());
         cartEntity.setUpdatedDate(LocalDateTime.now());
-        cartEntity.setUserId(userId);
+        cartEntity.setEmail(email);
         cartRepository.save(cartEntity);
         return cartEntityMapper.toCart(cartEntity);
     }
 
     @Override
-    public Optional<Cart> getCartByUserId(Long userId) {
-        Optional<CartEntity> cartEntity = cartRepository.getByUserId(userId);
+    public Optional<Cart> getCartByUserEmail(String email) {
+        Optional<CartEntity> cartEntity = cartRepository.getByEmail(email);
         return cartEntity.map(cartEntityMapper::toCart);
     }
 

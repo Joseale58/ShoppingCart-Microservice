@@ -5,6 +5,7 @@ import com.emazon.shopping_service.infrastructure.output.feign.exceptions.BadReq
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.InternalServerErrorException;
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.NotFoundException;
 import com.emazon.shopping_service.utils.FeignConstants;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Response;
 import feign.codec.ErrorDecoder;
@@ -12,6 +13,7 @@ import feign.codec.ErrorDecoder;
 import java.io.IOException;
 import java.io.InputStream;
 
+@JsonIgnoreProperties
 public class RetreiveMessageErrorDecoder implements ErrorDecoder {
 
     @Override

@@ -7,7 +7,7 @@ import com.emazon.shopping_service.domain.model.Category;
 import java.util.List;
 
 public interface ICartServicePort {
-    void addProductToCart(AddProduct addProduct, Long userId);
+    void addProductToCart(AddProduct addProduct, String email);
 
     void checkStockAvailability(AddProduct addProduct, Integer stock);
 

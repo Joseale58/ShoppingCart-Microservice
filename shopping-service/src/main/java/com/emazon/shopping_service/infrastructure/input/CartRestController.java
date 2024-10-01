@@ -4,13 +4,11 @@ import com.emazon.shopping_service.application.dto.AddProductRequest;
 import com.emazon.shopping_service.application.handler.ICartHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("cart")
@@ -23,7 +21,10 @@ public class CartRestController {
 
     @PostMapping
     public ResponseEntity<String> addProductToCart(@RequestBody AddProductRequest addProductRequest) {
-        cartHandler.addProductToCart(addProductRequest, 1L);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email =  authentication.getPrincipal().toString();
+        cartHandler.addProductToCart(addProductRequest, email);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

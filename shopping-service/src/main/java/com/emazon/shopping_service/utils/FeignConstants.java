@@ -6,11 +6,15 @@ public class FeignConstants {
         throw new UnsupportedOperationException(Constants.UTILITY_CLASS_SHOULD_NOT_BE_INSTANTIATED);
     }
 
-    public static final String FEIGN_API_NAME = "PRODUCT-API";
-    public static final String API_URL = "${STOCK_BASE_URL}";
+    public static final String FEIGN_STOCK_API_NAME = "PRODUCT-API";
+    public static final String FEIGN_TRANSACTION_NAME = "TRANSACTION-API";
+    public static final String API_STOCK_URL = "${STOCK_BASE_URL}";
+    public static final String API_TRANSACTION_URL = "${TRANSACTION_BASE_URL}";
 
     public static final String API_PATH_PRODUCT_CHECK_STOCK = "/products/{productId}";
     public static final String PRODUCT_ID = "productId";
+
+    public static final String API_PATH_LAST_DATE_SUPPLY = "supplies/lastdate/{productId}";
 
 
     //Codes

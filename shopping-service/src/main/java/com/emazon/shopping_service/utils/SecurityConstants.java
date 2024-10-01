@@ -13,6 +13,7 @@ public class SecurityConstants {
     public static final String CLAIM_ROLE = "role";
     public static final String CLAIM_ROLE_ADMIN = "admin";
     public static final String CLAIM_ROLE_AUX_BODEGA = "aux_bodega";
+    public static final String CLAIM_ROLE_CLIENT = "client";
 
     //Exceptions
     public static final String INVALID_TOKEN_MESSAGE = "Token invalido, no autorizado";

@@ -11,7 +11,7 @@ public class Constants {
     public static final String EXCEPTION_MESSAGE = "Mensaje: ";
 
     //Usecases
-    public static final String INSUFFICIENT_STOCK_EXCEPTION = "No hay suficiente stock para el producto solicitado";
+    public static final String INSUFFICIENT_STOCK_EXCEPTION = "No hay suficiente stock para el producto solicitado, la próxima fecha de abastecimiento es: ";
 
     public static final int MAX_CATEGORIES_ALLOWED = 3;
     public static final String CATEGORY_ITEM_LIMIT_EXCEEDED_EXCEPTION = "No se pueden agregar más de 3 productos de una categoría";
@@ -24,4 +24,6 @@ public class Constants {
 
     //Mapper
     public static final String SPRING_COMPONENT_MODEL = "spring";
+
+    public static final int ONE_MONTH = 1;
 }

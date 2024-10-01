@@ -18,6 +18,7 @@ public class ShoppingServiceApplication {
 		System.setProperty("DB_PASSWORD", dotenv.get("DB_PASSWORD"));
 		System.setProperty("JWT_SECRET", dotenv.get("JWT_SECRET"));
 		System.setProperty("STOCK_BASE_URL", dotenv.get("STOCK_BASE_URL"));
+		System.setProperty("TRANSACTION_BASE_URL", dotenv.get("TRANSACTION_BASE_URL"));
 
 		SpringApplication.run(ShoppingServiceApplication.class, args);
 	}

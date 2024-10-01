@@ -11,6 +11,7 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE,
         unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface ICartItemEntityMapper {
+    @Mapping(target = "productid", source = "productId")
     CartItem toCartItem(CartItemEntity cartItemEntity);
 
     @Mapping(target = "productId", source = "productid")

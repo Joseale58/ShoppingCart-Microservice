@@ -16,8 +16,8 @@ public class CartHandler implements ICartHandler{
     private final IProductDtoMapper productDtoMapper;
 
     @Override
-    public void addProductToCart(AddProductRequest addProductRequest, Long userId) {
-        cartServicePort.addProductToCart(productDtoMapper.toAddProduct(addProductRequest), userId);
+    public void addProductToCart(AddProductRequest addProductRequest, String email) {
+        cartServicePort.addProductToCart(productDtoMapper.toAddProduct(addProductRequest), email);
     }
 
 }
