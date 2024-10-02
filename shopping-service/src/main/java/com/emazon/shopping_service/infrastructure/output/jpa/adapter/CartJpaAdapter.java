@@ -2,6 +2,7 @@ package com.emazon.shopping_service.infrastructure.output.jpa.adapter;
 
 import com.emazon.shopping_service.domain.model.Cart;
 import com.emazon.shopping_service.domain.model.CartItem;
+import com.emazon.shopping_service.domain.model.UpdateProduct;
 import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartEntity;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartItemEntity;
@@ -51,8 +52,15 @@ public class CartJpaAdapter implements ICartPersistencePort {
     }
 
     @Override
-    public void addProductToCart(CartItem cartItem) {
+    public void updateProductToCart(CartItem cartItem) {
         CartItemEntity cartItemEntity = cartItemEntityMapper.toCartItemEntity(cartItem);
         cartItemRepository.save(cartItemEntity);
     }
+
+    @Override
+    public void deleteProductFromCart(CartItem cartItem) {
+        CartItemEntity cartItemEntity = cartItemEntityMapper.toCartItemEntity(cartItem);
+        cartItemRepository.delete(cartItemEntity);
+    }
+
 }

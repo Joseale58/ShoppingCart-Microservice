@@ -1,15 +1,15 @@
 package com.emazon.shopping_service.domain.model;
 
-public class AddProduct {
+public class UpdateProduct {
     private Long productId;
     private Integer quantity;
 
-    public AddProduct(Long productId, Integer quantity) {
+    public UpdateProduct(Long productId, Integer quantity) {
         this.productId = productId;
         this.quantity = quantity;
     }
 
-    public AddProduct() {
+    public UpdateProduct() {
 
     }
 
