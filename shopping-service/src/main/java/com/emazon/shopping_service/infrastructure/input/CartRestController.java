@@ -43,7 +43,7 @@ public class CartRestController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String email =  authentication.getPrincipal().toString();
         cartHandler.subtractProductFromCart(updateProductDtoRequest, email);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
 }
