@@ -64,14 +64,9 @@ public class CartJpaAdapter implements ICartPersistencePort {
         Long id = cartItem.getId();
         Optional<CartItemEntity> entityInDbOpt = cartItemRepository.findById(id);
         if (entityInDbOpt.isPresent()) {
-            CartItemEntity entityInDb = entityInDbOpt.get();
-            CartEntity cartEntity = entityInDb.getCart();
-            if (cartEntity != null) {
-                cartEntity.getCartItemEntities().remove(entityInDb);
-            }
-            cartItemRepository.delete(entityInDb);
+            cartItemRepository.deleteById(id);
         } else {
-            throw new ItemDoesNotExistException(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION)
+            throw new ItemDoesNotExistException(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION);
         }
     }
 
