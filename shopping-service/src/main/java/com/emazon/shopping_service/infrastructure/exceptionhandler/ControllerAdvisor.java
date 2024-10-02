@@ -1,6 +1,7 @@
 package com.emazon.shopping_service.infrastructure.exceptionhandler;
 
 import com.emazon.shopping_service.domain.exceptions.*;
+import com.emazon.shopping_service.infrastructure.exception.ItemDoesNotExistException;
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.BadRequestException;
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.NotFoundException;
 import com.emazon.shopping_service.utils.Constants;
@@ -63,6 +64,13 @@ public class ControllerAdvisor {
             ItemHasNotBeenAddedToCartException itemHasNotBeenAddedToCartException) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of(MESSAGE, itemHasNotBeenAddedToCartException.getMessage()));
+    }
+
+    @ExceptionHandler(ItemDoesNotExistException.class)
+    public ResponseEntity<Map<String, String>> handleItemDoesNotExistException(
+            ItemDoesNotExistException itemDoesNotExistException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(MESSAGE, itemDoesNotExistException.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)

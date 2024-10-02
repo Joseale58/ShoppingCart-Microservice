@@ -4,12 +4,14 @@ import com.emazon.shopping_service.domain.model.Cart;
 import com.emazon.shopping_service.domain.model.CartItem;
 import com.emazon.shopping_service.domain.model.UpdateProduct;
 import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
+import com.emazon.shopping_service.infrastructure.exception.ItemDoesNotExistException;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartEntity;
 import com.emazon.shopping_service.infrastructure.output.jpa.entity.CartItemEntity;
 import com.emazon.shopping_service.infrastructure.output.jpa.mapper.ICartEntityMapper;
 import com.emazon.shopping_service.infrastructure.output.jpa.mapper.ICartItemEntityMapper;
 import com.emazon.shopping_service.infrastructure.output.jpa.repository.ICartItemRepository;
 import com.emazon.shopping_service.infrastructure.output.jpa.repository.ICartRepository;
+import com.emazon.shopping_service.utils.Constants;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -59,8 +61,18 @@ public class CartJpaAdapter implements ICartPersistencePort {
 
     @Override
     public void deleteProductFromCart(CartItem cartItem) {
-        CartItemEntity cartItemEntity = cartItemEntityMapper.toCartItemEntity(cartItem);
-        cartItemRepository.delete(cartItemEntity);
+        Long id = cartItem.getId();
+        Optional<CartItemEntity> entityInDbOpt = cartItemRepository.findById(id);
+        if (entityInDbOpt.isPresent()) {
+            CartItemEntity entityInDb = entityInDbOpt.get();
+            CartEntity cartEntity = entityInDb.getCart();
+            if (cartEntity != null) {
+                cartEntity.getCartItemEntities().remove(entityInDb);
+            }
+            cartItemRepository.delete(entityInDb);
+        } else {
+            throw new ItemDoesNotExistException(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION)
+        }
     }
 
 }
