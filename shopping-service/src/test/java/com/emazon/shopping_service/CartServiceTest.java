@@ -1,13 +1,13 @@
 package com.emazon.shopping_service;
 
 import com.emazon.shopping_service.domain.api.ICartServicePort;
-import com.emazon.shopping_service.domain.exceptions.CategoryItemLimitExceededException;
-import com.emazon.shopping_service.domain.exceptions.InsufficientStockException;
+import com.emazon.shopping_service.domain.exceptions.*;
 import com.emazon.shopping_service.domain.model.*;
 import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.domain.spi.IStockPersistencePort;
 import com.emazon.shopping_service.domain.spi.ITransactionPersistencePort;
 import com.emazon.shopping_service.domain.usecase.CartUseCase;
+import com.emazon.shopping_service.utils.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,7 +27,7 @@ public class CartServiceTest {
     private Cart cart;
     private CartItem cartItem;
     private Product product;
-    private AddProduct addProduct;
+    private UpdateProduct updateProduct;
 
     @BeforeEach
     public void setUp() {
@@ -44,7 +44,7 @@ public class CartServiceTest {
         product = new Product(1L, "Valid Product", "Valid Description", 100, 10.0, new Brand(1L, "Brand", "Brand Description"), categoryList);
         cart = new Cart(1L, "user@example.com", LocalDateTime.now(), LocalDateTime.now(), new ArrayList<>());
         cartItem = new CartItem(1L, product.getId(), 1, cart);
-        addProduct = new AddProduct(product.getId(), 1);
+        updateProduct = new UpdateProduct(product.getId(), 1);
     }
 
     @Test
@@ -55,10 +55,10 @@ public class CartServiceTest {
         when(cartPersistencePort.createCart(email)).thenReturn(cart);
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
 
-        cartServicePort.addProductToCart(addProduct, email);
+        cartServicePort.addProductToCart(updateProduct, email);
 
         verify(cartPersistencePort).createCart(email);
-        verify(cartPersistencePort).addProductToCart(any(CartItem.class));
+        verify(cartPersistencePort).updateProductToCart(any(CartItem.class));
     }
 
     @Test
@@ -69,10 +69,10 @@ public class CartServiceTest {
         when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.empty());
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
 
-        cartServicePort.addProductToCart(addProduct, email);
+        cartServicePort.addProductToCart(updateProduct, email);
 
         verify(cartPersistencePort, never()).createCart(anyString());
-        verify(cartPersistencePort).addProductToCart(any(CartItem.class));
+        verify(cartPersistencePort).updateProductToCart(any(CartItem.class));
     }
 
     @Test
@@ -84,11 +84,11 @@ public class CartServiceTest {
         when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.of(existingCartItem));
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
 
-        addProduct.setQuantity(3);
-        cartServicePort.addProductToCart(addProduct, email);
+        updateProduct.setQuantity(3);
+        cartServicePort.addProductToCart(updateProduct, email);
 
         assertEquals(5, existingCartItem.getQuantity());
-        verify(cartPersistencePort).addProductToCart(existingCartItem);
+        verify(cartPersistencePort).updateProductToCart(existingCartItem);
     }
 
     @Test
@@ -100,10 +100,10 @@ public class CartServiceTest {
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
         when(transactionPersistencePort.nextSupplyDate(product.getId())).thenReturn(LocalDateTime.now().plusDays(2));
 
-        addProduct.setQuantity(2);
+        updateProduct.setQuantity(2);
 
         InsufficientStockException exception = assertThrows(InsufficientStockException.class, () ->
-                cartServicePort.addProductToCart(addProduct, email));
+                cartServicePort.addProductToCart(updateProduct, email));
 
     }
 
@@ -118,7 +118,7 @@ public class CartServiceTest {
         when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.empty());
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
 
-        cartServicePort.addProductToCart(addProduct, email);
+        cartServicePort.addProductToCart(updateProduct, email);
 
         assertTrue(cart.getUpdatedDate().isAfter(beforeUpdate));
         verify(cartPersistencePort).updateCart(cart);
@@ -126,21 +126,21 @@ public class CartServiceTest {
 
     @Test
     void shouldPassStockAvailabilityCheckWhenStockIsSufficient() {
-        addProduct.setQuantity(5);
+        updateProduct.setQuantity(5);
         int stock = 10;
 
-        assertDoesNotThrow(() -> cartServicePort.checkStockAvailability(addProduct, stock));
+        assertDoesNotThrow(() -> cartServicePort.checkStockAvailability(updateProduct, stock));
     }
 
     @Test
     void shouldFailStockAvailabilityCheckWhenStockIsInsufficient() {
-        addProduct.setQuantity(15);
+        updateProduct.setQuantity(15);
         int stock = 10;
 
         when(transactionPersistencePort.nextSupplyDate(product.getId())).thenReturn(LocalDateTime.now().plusDays(2));
 
        assertThrows(InsufficientStockException.class, () ->
-                cartServicePort.checkStockAvailability(addProduct, stock));
+                cartServicePort.checkStockAvailability(updateProduct, stock));
     }
 
     @Test
@@ -185,6 +185,111 @@ public class CartServiceTest {
         when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
 
         assertThrows(CategoryItemLimitExceededException.class, () ->
-                cartServicePort.addProductToCart(addProduct, email));
+                cartServicePort.addProductToCart(updateProduct, email));
     }
+
+    @Test
+    void shouldThrowInsufficientAddedItemsToCartExceptionWhenQuantityToSubtractExceedsCartQuantity() {
+        String email = "user@example.com";
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 10); // Intentar restar 10, pero solo hay 5
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.of(cart));
+        when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.of(cartItem));
+
+        InsufficientAddedItemsToCartException exception = assertThrows(InsufficientAddedItemsToCartException.class, () ->
+                cartServicePort.subtractProductFromCart(subtractProduct, email));
+
+        assertEquals(Constants.INSUFFICIENT_ADDED_ITEMS_TO_CART_EXCEPTION, exception.getMessage());
+        verify(cartPersistencePort, never()).updateCart(any());
+        verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+    @Test
+    void shouldSubtractProductFromExistingCartSuccessfully() {
+        String email = "user@example.com";
+        cartItem.setQuantity(2);
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 1);
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.of(cart));
+        when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.of(cartItem));
+        when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
+
+        LocalDateTime beforeUpdate = cart.getUpdatedDate();
+
+        cartServicePort.subtractProductFromCart(subtractProduct, email);
+
+        assertEquals(1, cartItem.getQuantity());
+        assertTrue(cart.getUpdatedDate().isAfter(beforeUpdate));
+        verify(cartPersistencePort).updateCart(cart);
+        verify(cartPersistencePort).updateProductToCart(cartItem);
+    }
+
+    @Test
+    void shouldThrowCartDoesNotExistsExceptionWhenCartDoesNotExist() {
+        String email = "nonexistent@example.com";
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 1);
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.empty());
+
+        CartDoesNotExistsException exception = assertThrows(CartDoesNotExistsException.class, () ->
+                cartServicePort.subtractProductFromCart(subtractProduct, email));
+
+        assertEquals(Constants.CART_DOES_NOT_EXISTS_EXCEPTION, exception.getMessage());
+        verify(cartPersistencePort, never()).updateCart(any());
+        verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+    @Test
+    void shouldThrowItemHasNotBeenAddedToCartExceptionWhenItemNotInCart() {
+        String email = "user@example.com";
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 1);
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.of(cart));
+        when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.empty());
+
+        ItemHasNotBeenAddedToCartException exception = assertThrows(ItemHasNotBeenAddedToCartException.class, () ->
+                cartServicePort.subtractProductFromCart(subtractProduct, email));
+
+        assertEquals(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION, exception.getMessage());
+        verify(cartPersistencePort, never()).updateCart(any());
+        verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+    @Test
+    void shouldDeleteProductFromCartWhenResultingQuantityIsZero() {
+        String email = "user@example.com";
+        cartItem.setQuantity(5);
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 5);
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.of(cart));
+        when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.of(cartItem));
+        when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
+
+        cartServicePort.subtractProductFromCart(subtractProduct, email);
+
+        assertEquals(0, cartItem.getQuantity());
+        verify(cartPersistencePort).deleteProductFromCart(cartItem);
+        verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+    @Test
+    void shouldDeleteProductFromCartWhenResultingQuantityIsBelowMinimum() {
+        String email = "user@example.com";
+        cartItem.setQuantity(4);
+        UpdateProduct subtractProduct = new UpdateProduct(product.getId(), 5);
+
+        when(cartPersistencePort.getCartByUserEmail(email)).thenReturn(Optional.of(cart));
+        when(cartPersistencePort.getCartItemById(cart.getId(), product.getId())).thenReturn(Optional.of(cartItem));
+        when(stockPersistencePort.getProductById(product.getId())).thenReturn(product);
+
+        assertThrows(InsufficientAddedItemsToCartException.class, () ->
+                cartServicePort.subtractProductFromCart(subtractProduct, email));
+
+        verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+
+
+
+
 }

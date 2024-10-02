@@ -1,7 +1,6 @@
 package com.emazon.shopping_service.infrastructure.exceptionhandler;
 
-import com.emazon.shopping_service.domain.exceptions.CategoryItemLimitExceededException;
-import com.emazon.shopping_service.domain.exceptions.InsufficientStockException;
+import com.emazon.shopping_service.domain.exceptions.*;
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.BadRequestException;
 import com.emazon.shopping_service.infrastructure.output.feign.exceptions.NotFoundException;
 import com.emazon.shopping_service.utils.Constants;
@@ -45,4 +44,31 @@ public class ControllerAdvisor {
                 .body(Map.of(MESSAGE, notFoundException.getMessage()));
     }
 
+    @ExceptionHandler(CartDoesNotExistsException.class)
+    public ResponseEntity<Map<String, String>> handleCartDoesNotExistsException(
+            CartDoesNotExistsException cartDoesNotExistsException) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(Map.of(MESSAGE, cartDoesNotExistsException.getMessage()));
+    }
+
+    @ExceptionHandler(InsufficientAddedItemsToCartException.class)
+    public ResponseEntity<Map<String, String>> handleInsufficientAddedItemsToCartException(
+            InsufficientAddedItemsToCartException insufficientAddedItemsToCartException) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of(MESSAGE, insufficientAddedItemsToCartException.getMessage()));
+    }
+
+    @ExceptionHandler(ItemHasNotBeenAddedToCartException.class)
+    public ResponseEntity<Map<String, String>> handleItemHasNotBeenAddedToCartException(
+            ItemHasNotBeenAddedToCartException itemHasNotBeenAddedToCartException) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of(MESSAGE, itemHasNotBeenAddedToCartException.getMessage()));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleException(
+            Exception exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(MESSAGE, exception.getMessage()));
+    }
 }

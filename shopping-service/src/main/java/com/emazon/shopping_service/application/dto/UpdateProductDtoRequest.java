@@ -5,7 +5,7 @@ import com.emazon.shopping_service.utils.Constants;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public class AddProductRequest {
+public class UpdateProductDtoRequest {
 
     @NotNull(message = Constants.PRODUCT_ID_CANNOT_BE_NULL)
     @Positive(message = Constants.PRODUCT_ID_MUST_BE_POSITIVE)
@@ -15,7 +15,7 @@ public class AddProductRequest {
     @Positive(message = Constants.PRODUCT_QUANTITY_MUST_BE_POSITIVE)
     private Integer quantity;
 
-    public AddProductRequest(Long productId, Integer quantity) {
+    public UpdateProductDtoRequest(Long productId, Integer quantity) {
         this.productId = productId;
         this.quantity = quantity;
     }

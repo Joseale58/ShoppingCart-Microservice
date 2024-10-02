@@ -1,8 +1,7 @@
 package com.emazon.shopping_service.domain.usecase;
 
 import com.emazon.shopping_service.domain.api.ICartServicePort;
-import com.emazon.shopping_service.domain.exceptions.CategoryItemLimitExceededException;
-import com.emazon.shopping_service.domain.exceptions.InsufficientStockException;
+import com.emazon.shopping_service.domain.exceptions.*;
 import com.emazon.shopping_service.domain.model.*;
 import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.domain.spi.IStockPersistencePort;
@@ -28,7 +27,7 @@ public class CartUseCase implements ICartServicePort {
     }
 
     @Override
-    public void addProductToCart(AddProduct addProduct, String email) {
+    public void addProductToCart(UpdateProduct updateProduct, String email) {
 
         Optional<Cart> optionalCart = cartPersistencePort.getCartByUserEmail(email);
         Cart cart;
@@ -39,36 +38,36 @@ public class CartUseCase implements ICartServicePort {
             cart = optionalCart.get();
         }
 
-        Optional<CartItem> optionalCartItem = cartPersistencePort.getCartItemById(cart.getId(), addProduct.getProductId());
-        CartItem cartItem = new CartItem();
+        Optional<CartItem> optionalCartItem = cartPersistencePort.getCartItemById(cart.getId(), updateProduct.getProductId());
+        CartItem cartItem;
 
         if(optionalCartItem.isPresent()) {
             cartItem = optionalCartItem.get();
-            cartItem.setQuantity(cartItem.getQuantity() + addProduct.getQuantity());
-            addProduct.setQuantity(cartItem.getQuantity());
+            cartItem.setQuantity(cartItem.getQuantity() + updateProduct.getQuantity());
+            updateProduct.setQuantity(cartItem.getQuantity());
         } else {
             cartItem = new CartItem();
             cartItem.setCart(cart);
-            cartItem.setProductid(addProduct.getProductId());
-            cartItem.setQuantity(addProduct.getQuantity());
+            cartItem.setProductid(updateProduct.getProductId());
+            cartItem.setQuantity(updateProduct.getQuantity());
         }
 
-        Product product = stockPersistencePort.getProductById(addProduct.getProductId());
+        Product product = stockPersistencePort.getProductById(updateProduct.getProductId());
 
-        this.checkStockAvailability(addProduct,product.getStock());
+        this.checkStockAvailability(updateProduct,product.getStock());
 
         this.checkMaxCategories(product.getCategories(), cart);
 
         cart.setUpdatedDate(LocalDateTime.now());
         cartPersistencePort.updateCart(cart);
-        cartPersistencePort.addProductToCart(cartItem);
+        cartPersistencePort.updateProductToCart(cartItem);
 
     }
 
     @Override
-    public void checkStockAvailability(AddProduct addProduct, Integer stock) {
-        if(stock < addProduct.getQuantity()) {
-            LocalDateTime nextSupplyDate = transactionPersistencePort.nextSupplyDate(addProduct.getProductId());
+    public void checkStockAvailability(UpdateProduct updateProduct, Integer stock) {
+        if(stock < updateProduct.getQuantity()) {
+            LocalDateTime nextSupplyDate = transactionPersistencePort.nextSupplyDate(updateProduct.getProductId());
             throw new InsufficientStockException(Constants.INSUFFICIENT_STOCK_EXCEPTION + nextSupplyDate);
         }
     }
@@ -94,6 +93,51 @@ public class CartUseCase implements ICartServicePort {
                 throw new CategoryItemLimitExceededException(Constants.CATEGORY_ITEM_LIMIT_EXCEEDED_EXCEPTION);
             }
         }
+
+
+    }
+
+    @Override
+    public void subtractProductFromCart(UpdateProduct updateProduct, String email) {
+
+        Optional<Cart> optionalCart = cartPersistencePort.getCartByUserEmail(email);
+        Cart cart;
+
+        if (optionalCart.isEmpty()) {
+            throw new CartDoesNotExistsException(Constants.CART_DOES_NOT_EXISTS_EXCEPTION);
+        } else {
+            cart = optionalCart.get();
+        }
+
+        Optional<CartItem> optionalCartItem = cartPersistencePort.getCartItemById(cart.getId(), updateProduct.getProductId());
+        CartItem cartItem;
+
+        if(optionalCartItem.isEmpty()) {
+            throw new ItemHasNotBeenAddedToCartException(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION);
+        }
+
+
+        cartItem = optionalCartItem.get();
+
+        if(cartItem.getQuantity() < updateProduct.getQuantity()) {
+            throw new InsufficientAddedItemsToCartException(Constants.INSUFFICIENT_ADDED_ITEMS_TO_CART_EXCEPTION);
+        }
+
+        cartItem.setQuantity(cartItem.getQuantity() - updateProduct.getQuantity());
+        updateProduct.setQuantity(cartItem.getQuantity());
+
+        Product product = stockPersistencePort.getProductById(updateProduct.getProductId());
+
+        if(updateProduct.getQuantity()<=Constants.MINIMUM_QUANTITY_AMOUNT){
+            cartPersistencePort.deleteProductFromCart(cartItem);
+        } else {
+            this.checkStockAvailability(updateProduct,product.getStock());
+
+            cart.setUpdatedDate(LocalDateTime.now());
+            cartPersistencePort.updateCart(cart);
+            cartPersistencePort.updateProductToCart(cartItem);
+        }
+
 
 
     }
