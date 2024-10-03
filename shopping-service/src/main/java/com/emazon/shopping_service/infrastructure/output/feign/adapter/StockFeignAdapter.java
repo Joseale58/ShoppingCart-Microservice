@@ -21,8 +21,8 @@ public class StockFeignAdapter implements IStockPersistencePort {
     }
 
     @Override
-    public CustomPage<Product> getPaginatedProducts(Integer page, Integer pageSize, String order, String sort, String brandName, String categoryName, List<Long> productsId) {
-            ResponseEntity<CustomPage<Product>> response = stockFeignClient.getPaginatedProducts(page, pageSize, order, sort, brandName, categoryName, productsId);
+    public CustomPage<Product> getPaginatedProducts(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName,List<Long> productsId) {
+            ResponseEntity<CustomPage<Product>> response = stockFeignClient.getPaginatedProducts(page, pageSize, order, sort, categoryName, brandName,  productsId);
             return response.getBody();
     }
 }

@@ -10,7 +10,7 @@ public interface ICartServicePort {
     void checkStockAvailability(UpdateProduct updateProduct, Integer stock);
     void checkMaxCategories(List<Category> categories, Cart cart);
     void subtractProductFromCart(UpdateProduct updateProduct, String email);
-    CartItems getCartItems(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName, String email);
+    CartItems getCartItems(Integer page, Integer pageSize, String order, String sort, String brandName,String categoryName, String email);
     void updateCartItems(Product product, List<CartItem> cartItems);
     String calculateTotalPrice(List<CartItem> cartItems, CustomPage<Product> products);
 }
