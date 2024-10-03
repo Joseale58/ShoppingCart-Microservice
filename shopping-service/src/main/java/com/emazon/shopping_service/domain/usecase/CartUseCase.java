@@ -144,7 +144,7 @@ public class CartUseCase implements ICartServicePort {
     }
 
     @Override
-    public CartItems getCartItems(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName, String email) {
+    public CartItems getCartItems(Integer page, Integer pageSize, String order, String sort, String brandName, String categoryName, String email) {
 
         if(page < Constants.PAGE_MINIMUM_INDEX) {
             throw new IllegalArgumentException(Constants.PAGE_MUST_BE_POSITIVE_EXCEPTION);
@@ -168,7 +168,7 @@ public class CartUseCase implements ICartServicePort {
                 .map(CartItem::getProductId)
                 .toList();
 
-        CustomPage<Product> products = stockPersistencePort.getPaginatedProducts(page, pageSize, order, sort, categoryName, brandName, productsId);
+        CustomPage<Product> products = stockPersistencePort.getPaginatedProducts(page, pageSize, order, sort,brandName, categoryName, productsId);
 
         for(Product product : products.getContent()) {
             updateCartItems(product, cartItems);

@@ -8,5 +8,5 @@ public interface ICartHandler {
 
     void addProductToCart(UpdateProductDtoRequest updateProductDtoRequest, String email);
     void subtractProductFromCart(UpdateProductDtoRequest updateProductDtoRequest, String email);
-    CartItemsDtoResponse getCartItems(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName, String email);
+    CartItemsDtoResponse getCartItems(Integer page, Integer pageSize, String order, String sort, String brandName, String categoryName, String email);
 }

@@ -22,6 +22,11 @@ public class CartRestController {
 
     private final ICartHandler cartHandler;
 
+
+    @Operation(
+            summary = "Show cart items",
+            description = "This endpoint brings all the items in the user cart paginated"
+    )
     @GetMapping
     public ResponseEntity<CartItemsDtoResponse> getAllArticles(
             @RequestParam(defaultValue = Constants.DEFAULT_PAGE) Integer page,

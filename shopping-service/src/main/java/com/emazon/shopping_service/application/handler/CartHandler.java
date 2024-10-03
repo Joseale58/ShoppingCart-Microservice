@@ -27,8 +27,8 @@ public class CartHandler implements ICartHandler{
     }
 
     @Override
-    public CartItemsDtoResponse getCartItems(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName, String email) {
-        return productDtoMapper.toCartItemsDtoResponse(cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email));
+    public CartItemsDtoResponse getCartItems(Integer page, Integer pageSize, String order, String sort, String brandName,String categoryName,  String email) {
+        return productDtoMapper.toCartItemsDtoResponse(cartServicePort.getCartItems(page, pageSize, order, sort, brandName, categoryName, email));
     }
 
 }

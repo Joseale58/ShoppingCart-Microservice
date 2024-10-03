@@ -23,8 +23,8 @@ public interface IStockFeignClient {
             @RequestParam Integer size,
             @RequestParam String order,
             @RequestParam String sort,
-            @RequestParam String brandName,
             @RequestParam String categoryName,
+            @RequestParam String brandName,
             @RequestParam List<Long> productsId
     );
 }
