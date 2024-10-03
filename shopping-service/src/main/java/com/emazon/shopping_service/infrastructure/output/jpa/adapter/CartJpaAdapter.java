@@ -15,6 +15,7 @@ import com.emazon.shopping_service.utils.Constants;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -68,6 +69,15 @@ public class CartJpaAdapter implements ICartPersistencePort {
         } else {
             throw new ItemDoesNotExistException(Constants.ITEM_HAS_NOT_BEEN_ADDED_TO_CART_EXCEPTION);
         }
+    }
+
+    @Override
+    public List<CartItem> getCartItemsFromUserByEmail(String email) {
+        Optional<List<CartItemEntity>> cartItems = cartItemRepository.findByCartEmail(email);
+        if(cartItems.isPresent()){
+            return cartItemEntityMapper.toCartItems(cartItems.get());
+        }
+        return List.of();
     }
 
 }

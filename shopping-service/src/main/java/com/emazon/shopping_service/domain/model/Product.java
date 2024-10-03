@@ -1,5 +1,6 @@
 package com.emazon.shopping_service.domain.model;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class Product {
@@ -8,9 +9,13 @@ public class Product {
     private String name;
     private String description;
     private Integer stock;
+    private Integer cartQuantity;
+    private LocalDateTime nextSupplyAvailability;
     private Double price;
     private Brand brand;
     private List<Category> categories;
+
+    public Product(){}
 
     public Product(Long id, String name, String description, Integer stock, Double price, Brand brand, List<Category> categories) {
         this.id = id;
@@ -20,6 +25,22 @@ public class Product {
         this.price = price;
         this.brand = brand;
         this.categories = categories;
+    }
+
+    public Integer getCartQuantity() {
+        return cartQuantity;
+    }
+
+    public void setCartQuantity(Integer cartQuantity) {
+        this.cartQuantity = cartQuantity;
+    }
+
+    public LocalDateTime getNextSupplyAvailability() {
+        return nextSupplyAvailability;
+    }
+
+    public void setNextSupplyAvailability(LocalDateTime nextSupplyAvailability) {
+        this.nextSupplyAvailability = nextSupplyAvailability;
     }
 
     public Long getId() {

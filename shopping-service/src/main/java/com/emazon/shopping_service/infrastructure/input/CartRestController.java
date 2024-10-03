@@ -1,5 +1,7 @@
 package com.emazon.shopping_service.infrastructure.input;
 
+import com.emazon.shopping_service.application.dto.CartItemsDtoResponse;
+import com.emazon.shopping_service.utils.Constants;
 import com.emazon.shopping_service.application.dto.UpdateProductDtoRequest;
 import com.emazon.shopping_service.application.handler.ICartHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +21,23 @@ public class CartRestController {
 
 
     private final ICartHandler cartHandler;
+
+    @GetMapping
+    public ResponseEntity<CartItemsDtoResponse> getAllArticles(
+            @RequestParam(defaultValue = Constants.DEFAULT_PAGE) Integer page,
+            @RequestParam(defaultValue = Constants.DEFAULT_SIZE) Integer size,
+            @RequestParam(defaultValue = Constants.DEFAULT_SORT_DIRECTION) String order,
+            @RequestParam(defaultValue = Constants.DEFAULT_SORT_BY) String sort,
+            @RequestParam(defaultValue = Constants.DEFAULT_CATEGORY_NAME) String categoryName,
+            @RequestParam(defaultValue = Constants.DEFAULT_BRAND_NAME) String brandName
+
+    ) {
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email =  authentication.getPrincipal().toString();
+        return ResponseEntity.ok(cartHandler.getCartItems(page, size, order, sort, categoryName, brandName, email));
+    }
+
 
     @Operation(
             summary = "Add product to cart",
