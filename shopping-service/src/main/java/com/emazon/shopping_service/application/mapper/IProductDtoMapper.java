@@ -1,6 +1,8 @@
 package com.emazon.shopping_service.application.mapper;
 
+import com.emazon.shopping_service.application.dto.CartItemsDtoResponse;
 import com.emazon.shopping_service.application.dto.UpdateProductDtoRequest;
+import com.emazon.shopping_service.domain.model.CartItems;
 import com.emazon.shopping_service.domain.model.UpdateProduct;
 import com.emazon.shopping_service.utils.Constants;
 import org.mapstruct.Mapper;
@@ -11,4 +13,6 @@ import org.mapstruct.ReportingPolicy;
         unmappedSourcePolicy = ReportingPolicy.IGNORE)
 public interface IProductDtoMapper {
     UpdateProduct toUpdateProduct(UpdateProductDtoRequest updateProductDtoRequest);
+
+    CartItemsDtoResponse toCartItemsDtoResponse(CartItems cartItems);
 }

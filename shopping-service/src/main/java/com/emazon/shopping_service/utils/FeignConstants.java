@@ -14,6 +14,12 @@ public class FeignConstants {
     public static final String API_PATH_PRODUCT_CHECK_STOCK = "/products/{productId}";
     public static final String PRODUCT_ID = "productId";
 
+    public static final String API_PATH_PRODUCTS_PAGINATED = "/products";
+    public static final String PAGE_NUMBER = "page";
+    public static final String PAGE_SIZE = "pageSize";
+    public static final String PAGE_ORDER = "order";
+    public static final String PAGE_SORT = "sort";
+
     public static final String API_PATH_LAST_DATE_SUPPLY = "supplies/lastdate/{productId}";
 
 

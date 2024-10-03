@@ -13,13 +13,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true  # Para formatear el SQL
-    show-sql: true  # Mostrar las consultas SQL en la consola
-
-  logging:
-    level:
-      org.hibernate.SQL: DEBUG  # Mostrar las consultas SQL
-      org.hibernate.type.descriptor.sql.BasicBinder: TRACE
 
 jwt:
   secret: ${JWT_SECRET}

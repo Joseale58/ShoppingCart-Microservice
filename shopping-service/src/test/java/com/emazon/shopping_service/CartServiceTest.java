@@ -7,6 +7,7 @@ import com.emazon.shopping_service.domain.spi.ICartPersistencePort;
 import com.emazon.shopping_service.domain.spi.IStockPersistencePort;
 import com.emazon.shopping_service.domain.spi.ITransactionPersistencePort;
 import com.emazon.shopping_service.domain.usecase.CartUseCase;
+import com.emazon.shopping_service.domain.util.pageable.CustomPage;
 import com.emazon.shopping_service.utils.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,8 +34,7 @@ public class CartServiceTest {
     public void setUp() {
         cartPersistencePort = Mockito.mock(ICartPersistencePort.class);
         stockPersistencePort = Mockito.mock(IStockPersistencePort.class);
-        transactionPersistencePort = Mockito.mock(ITransactionPersistencePort.class);
-        cartServicePort = new CartUseCase(cartPersistencePort, stockPersistencePort, transactionPersistencePort);
+        transactionPersistencePort = Mockito.mock(ITransactionPersistencePort.class); cartServicePort = Mockito.spy(new CartUseCase(cartPersistencePort, stockPersistencePort, transactionPersistencePort));
 
         List<Category> categoryList = Arrays.asList(
                 new Category(1L, "Category 1", "Description 1"),
@@ -286,6 +286,188 @@ public class CartServiceTest {
                 cartServicePort.subtractProductFromCart(subtractProduct, email));
 
         verify(cartPersistencePort, never()).updateProductToCart(any());
+    }
+
+    @Test
+    void getCartItems_ShouldThrowException_WhenPageIsLessThanMinimumIndex() {
+        String email = "user@example.com";
+        Integer page = -1; // Índice de página inválido
+        Integer pageSize = 10;
+        String order = "ASC";
+        String sort = "price";
+        String categoryName = null;
+        String brandName = null;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email)
+        );
+
+        assertEquals(Constants.PAGE_MUST_BE_POSITIVE_EXCEPTION, exception.getMessage());
+    }
+
+    @Test
+    void getCartItems_ShouldThrowException_WhenPageSizeIsOutOfRange() {
+        String email = "user@example.com";
+        Integer page = 0;
+        Integer pageSize = Constants.PAGE_MAX_SIZE + 1; // Tamaño de página excede el máximo
+        String order = "ASC";
+        String sort = "price";
+        String categoryName = null;
+        String brandName = null;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email)
+        );
+
+        assertEquals(Constants.PAGE_SIZE_RANGE_EXCEPTION, exception.getMessage());
+    }
+
+    @Test
+    void getCartItems_ShouldThrowException_WhenOrderIsInvalid() {
+        String email = "user@example.com";
+        Integer page = 0;
+        Integer pageSize = 10;
+        String order = "INVALID";
+        String sort = "price";
+        String categoryName = null;
+        String brandName = null;
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email)
+        );
+
+        assertEquals(Constants.PAGE_SORT_DIRECTION_EXCEPTION, exception.getMessage());
+    }
+
+    @Test
+    void getCartItems_ShouldReturnEmptyCartItems_WhenCartIsEmpty() {
+        String email = "user@example.com";
+        Integer page = 0;
+        Integer pageSize = 10;
+        String order = "ASC";
+        String sort = "price";
+        String categoryName = "";
+        String brandName = "";
+
+        when(cartPersistencePort.getCartItemsFromUserByEmail(email)).thenReturn(Collections.emptyList());
+
+        CartItems result = cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email);
+
+        assertNotNull(result);
+        assertEquals(Constants.EMPTY_STRING, result.getTotalPrice());
+    }
+
+    @Test
+    void getCartItems_ShouldReturnCartItemsSuccessfully_WhenCartIsNotEmpty() {
+        String email = "user@example.com";
+        Integer page = 0;
+        Integer pageSize = 10;
+        String order = "ASC";
+        String sort = "price";
+        String categoryName = "";
+        String brandName = "";
+
+        CartItem cartItem1 = new CartItem(1L, product.getId(), 2, cart);
+        CartItem cartItem2 = new CartItem(2L, product.getId() + 1, 3, cart);
+        List<CartItem> cartItems = Arrays.asList(cartItem1, cartItem2);
+
+        when(cartPersistencePort.getCartItemsFromUserByEmail(email)).thenReturn(cartItems);
+
+        Product product2 = new Product(product.getId() + 1, "Another Product", "Description", 100, 20.0, null, Collections.emptyList());
+        List<Product> productList = Arrays.asList(product, product2);
+        CustomPage<Product> productsPage = new CustomPage<>();
+        productsPage.setContent(productList);
+
+        List<Long> productsId = cartItems.stream()
+                .map(CartItem::getProductId)
+                .toList();
+
+        when(stockPersistencePort.getPaginatedProducts(page, pageSize, order, sort, categoryName, brandName, productsId)).thenReturn(productsPage);
+
+        doNothing().when(cartServicePort).updateCartItems(any(Product.class), eq(cartItems));
+        doReturn("100.0").when(cartServicePort).calculateTotalPrice(cartItems, productsPage);
+
+        CartItems result = cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email);
+
+        assertNotNull(result);
+        assertEquals(2, result.getProducts().getContent().size());
+        assertEquals("100.0", result.getTotalPrice());
+
+        verify(cartServicePort, times(2)).updateCartItems(any(Product.class), eq(cartItems));
+        verify(cartServicePort).calculateTotalPrice(cartItems, productsPage);
+    }
+
+    @Test
+    void updateCartItems_ShouldSetCartQuantity_WhenCartItemExists() {
+        Product productToUpdate = new Product(1L, "Product 1", "Description", 5, 10.0, null, Collections.emptyList());
+        CartItem matchingCartItem = new CartItem(1L, 1L, 3, cart);
+        List<CartItem> cartItems = Collections.singletonList(matchingCartItem);
+
+        cartServicePort.updateCartItems(productToUpdate, cartItems);
+
+        assertEquals(matchingCartItem.getQuantity(), productToUpdate.getCartQuantity());
+    }
+
+    @Test
+    void updateCartItems_ShouldSetNextSupplyAvailability_WhenStockIsInsufficient() {
+        Product productToUpdate = new Product(1L, "Product 1", "Description", 2, 10.0, null, Collections.emptyList());
+        CartItem matchingCartItem = new CartItem(1L, 1L, 3, cart);
+        List<CartItem> cartItems = Collections.singletonList(matchingCartItem);
+
+        LocalDateTime nextSupplyDate = LocalDateTime.now().plusDays(5);
+        when(transactionPersistencePort.nextSupplyDate(productToUpdate.getId())).thenReturn(nextSupplyDate);
+
+        cartServicePort.updateCartItems(productToUpdate, cartItems);
+
+        assertEquals(matchingCartItem.getQuantity(), productToUpdate.getCartQuantity());
+        assertEquals(nextSupplyDate, productToUpdate.getNextSupplyAvailability());
+
+        verify(transactionPersistencePort).nextSupplyDate(productToUpdate.getId());
+    }
+
+    @Test
+    void updateCartItems_ShouldThrowException_WhenCartItemNotFound() {
+        Product productToUpdate = new Product(1L, "Product 1", "Description", 5, 10.0, null, Collections.emptyList());
+        List<CartItem> cartItems = Collections.singletonList(new CartItem(1L, 2L, 3, cart)); // ID de producto diferente
+
+        CartItemNotFoundException exception = assertThrows(CartItemNotFoundException.class, () ->
+                cartServicePort.updateCartItems(productToUpdate, cartItems)
+        );
+
+        assertEquals(Constants.CART_ITEM_NOT_FOUND_EXCEPTION + productToUpdate.getId(), exception.getMessage());
+    }
+
+    @Test
+    void calculateTotalPrice_ShouldCalculateCorrectTotal_WhenProductsMatchCartItems() {
+        CartItem cartItem1 = new CartItem(1L, 1L, 2, cart);
+        CartItem cartItem2 = new CartItem(2L, 2L, 3, cart);
+        List<CartItem> cartItems = Arrays.asList(cartItem1, cartItem2);
+
+        Product product1 = new Product(1L, "Product 1", "Description", 5, 10.0, null, Collections.emptyList());
+        Product product2 = new Product(2L, "Product 2", "Description", 5, 20.0, null, Collections.emptyList());
+        CustomPage<Product> productsPage = new CustomPage<>();
+        productsPage.setContent(Arrays.asList(product1, product2));
+
+        String totalPrice = cartServicePort.calculateTotalPrice(cartItems, productsPage);
+
+        double expectedTotal = (2 * 10.0) + (3 * 20.0);
+        assertEquals(String.valueOf(expectedTotal), totalPrice);
+    }
+
+    @Test
+    void calculateTotalPrice_ShouldSkipCartItem_WhenProductNotFoundInProductsList() {
+        CartItem cartItem1 = new CartItem(1L, 1L, 2, cart);
+        CartItem cartItem2 = new CartItem(2L, 2L, 3, cart);
+        List<CartItem> cartItems = Arrays.asList(cartItem1, cartItem2);
+
+        Product product1 = new Product(1L, "Product 1", "Description", 5, 10.0, null, Collections.emptyList());
+        CustomPage<Product> productsPage = new CustomPage<>();
+        productsPage.setContent(Collections.singletonList(product1));
+
+        String totalPrice = cartServicePort.calculateTotalPrice(cartItems, productsPage);
+
+        double expectedTotal = 2 * 10.0; // Solo se encuentra el producto1
+        assertEquals(String.valueOf(expectedTotal), totalPrice);
     }
 
 

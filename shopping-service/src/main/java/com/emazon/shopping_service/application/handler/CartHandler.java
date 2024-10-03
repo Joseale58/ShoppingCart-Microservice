@@ -1,5 +1,6 @@
 package com.emazon.shopping_service.application.handler;
 
+import com.emazon.shopping_service.application.dto.CartItemsDtoResponse;
 import com.emazon.shopping_service.application.dto.UpdateProductDtoRequest;
 import com.emazon.shopping_service.application.mapper.IProductDtoMapper;
 import com.emazon.shopping_service.domain.api.ICartServicePort;
@@ -23,6 +24,11 @@ public class CartHandler implements ICartHandler{
     @Override
     public void subtractProductFromCart(UpdateProductDtoRequest updateProductDtoRequest, String email) {
         cartServicePort.subtractProductFromCart(productDtoMapper.toUpdateProduct(updateProductDtoRequest), email);
+    }
+
+    @Override
+    public CartItemsDtoResponse getCartItems(Integer page, Integer pageSize, String order, String sort, String categoryName, String brandName, String email) {
+        return productDtoMapper.toCartItemsDtoResponse(cartServicePort.getCartItems(page, pageSize, order, sort, categoryName, brandName, email));
     }
 
 }
